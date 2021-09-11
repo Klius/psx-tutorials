@@ -1,0 +1,27 @@
+<tim_project>
+    <properties buffer_res="0" buffer_order="0"/>
+    <tim_group name="global">
+        <tim file="texture64.tim" source="texture64.png">
+            <import_parameters>
+                <target_bpp>8</target_bpp>
+                <dithering>0</dithering>
+                <quantize_mode>0</quantize_mode>
+                <set_color_stp>0</set_color_stp>
+                <set_black_stp>0</set_black_stp>
+                <transparency_mode>0</transparency_mode>
+            </import_parameters>
+        </tim>
+        <tim file="test.tim" source="..\..\..\repos\sneaky-snack\assets\player\player.png">
+            <import_parameters>
+                <target_bpp>16</target_bpp>
+                <dithering>0</dithering>
+                <quantize_mode>0</quantize_mode>
+                <set_color_stp>0</set_color_stp>
+                <set_black_stp>0</set_black_stp>
+                <transparency_mode>1</transparency_mode>
+                <alpha_threshold>127</alpha_threshold>
+                <alpha_stp_threshold>255</alpha_stp_threshold>
+            </import_parameters>
+        </tim>
+    </tim_group>
+</tim_project>
