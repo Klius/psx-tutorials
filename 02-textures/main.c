@@ -17,9 +17,9 @@ int bg_color[3] = {238,230,0};
 
 int	x[3] = {320/2,24,256};
 int	y[3] = {240/2,32,200};
-int speed_x[3] = {-1,-1,1};
+int speed_x[3] = {-1,-1,2};
 int speed_y[3] = {-1,1,-2};
-int colors[3][3] = {{255,0,0},{0,0,255},{0,0,0}};
+int colors[3][3] = {{255,1,1},{1,1,255},{40,1,128}};
 
 //define ordering table
 u_int ot[2][OTLEN];
@@ -63,10 +63,9 @@ void GetSprite(TIM_IMAGE *tim, SPRITE *sprite) {
     sprite->col.r = 128;
     sprite->col.g = 128;
     sprite->col.b = 128;
-    
 }
 //sorts the sprite into the ordering table
-char *SortSprite(int x, int y, u_int *ot, char *pri, SPRITE *sprite) {
+char *SortSprite(int x, int y,int colors[], u_int *ot, char *pri, SPRITE *sprite) {
 
     SPRT *sprt;
     DR_TPAGE *tpage;
@@ -134,30 +133,6 @@ void init(void){
     //Set initial primitive pointer address
     nextpri = primbuff[0];
 
-	//TIM
-	//This can be defined locally, if you don't need the TIM coordinates
-	
-	//extern u_int tim_my_image[];
-	//Load the TIM
-	//LoadTexture((u_int*)tim_my_image, &my_image);
-	/*
-
-	//Copy the TIM coordinates
-	tim_prect = *my_image.prect;
-	tim_crect = *my_image.crect;
-	tim_mode = my_image.mode;
-
-	//Calculate U.V offset for TIMS that are not page aligned
-	tim_uoffs = (tim_prect.x%64)<<(2-(tim_mode&0x3));
-	tim_voffs = (tim_prect.y&0xff);
-
-
-    // set tpage of lone texture as initial tpage
-    draw[0].tpage = getTPage( tim_mode&0x3, 0, tim_prect.x, tim_prect.y );
-    draw[1].tpage = getTPage( tim_mode&0x3, 0, tim_prect.x, tim_prect.y );
-	*/
-	// apply initial drawing environment
-    //PutDrawEnv(&draw[!db]);
 }
 
 void display(void){
@@ -180,7 +155,26 @@ void display(void){
     nextpri = primbuff[db]; //Reset next primitive pointer
 }
 
-
+void move_sprite(u_char w,u_char h,int i){
+	x[i] += speed_x[i];
+	y[i] += speed_y[i];
+	if (y[i] < 0 ){
+		y[i] = 0;
+		speed_y[i] *= -1;
+	}
+	else if (y[i]+h > 240 ){
+		y[i] = 240 - h;
+		speed_y[i] *= -1;
+	}
+	if (x[i] < 0 ){
+		x[i] = 1;
+		speed_x[i] *= -1;
+	}
+	else if (x[i]+w > 320 ){
+		x[i] = 320 - w;
+		speed_x[i] *= -1;
+	} 
+}
 void move(TILE* tile,int i){
 	x[i] += speed_x[i];
 	y[i] += speed_y[i];
@@ -211,26 +205,39 @@ void tiles(TILE* tile, int i){
 	addPrim(ot[db],tile);
 	
 }
-void draw_sprite(SPRT* sprt)
+int Random(int max)
 {
- 	setSprt(sprt);                  // Initialize the primitive (very important)
-    setXY0(sprt, 48, 48);           // Position the sprite at (48,48)
-    setWH(sprt, 64, 64);            // Set size to 64x64 pixels
-    setUV0(sprt,                    // Set UV coordinates
-            tim_uoffs, 
-            tim_voffs);
-    setClut(sprt,                   // Set CLUT coordinates to sprite
-            tim_crect.x,
-            tim_crect.y);
-    setRGB0(sprt,                   // Set primitive color
-            128, 128, 128);
-    addPrim(ot[db], sprt);          // Sort primitive to OT
+	srand(GetRCnt(0)); // initialise the random seed generator
+	int r = rand()%max;
+	r = rand()%max;
+	r = rand()%max;
+	return r; // return a random number based off of max
+}
+void setColors(SPRITE *sprite){
+/*	for(int j=0;j<3;j++){
+		colors[it][j]++;
+	}*/
+	sprite->col.r = Random(255);
+    sprite->col.g = Random(255);
+    sprite->col.b = Random(255);
+}
+void changeColors(SPRITE *sprite){
+	int r = 1+sprite->col.r;
+	int g = 1+sprite->col.g;
+	int b = 1+sprite->col.b; 
+	sprite->col.r=r;
+    sprite->col.g=g;
+    sprite->col.b=b;
+}
+void changeSize(SPRITE *sprite){
+	sprite->w = Random(64);
+	sprite->h = Random(64);
 }
 int main()
 {
     TILE *tile;  //pointer for TILE
 
-	SPRITE sprite;
+	//SPRITE sprite;
 	TIM_IMAGE my_image;
 		
 	extern u_int tim_my_image[];
@@ -241,8 +248,19 @@ int main()
 
 	
 
-
-	GetSprite(&my_image, &sprite);
+	SPRITE sprites[3];
+	for (int i = 0;i<3;i++){
+		SPRITE sprite;
+		GetSprite(&my_image, &sprite);
+		if ( i % 2 == 0){
+			setColors(&sprite);
+		}
+		else{
+			changeSize(&sprite);
+		}
+		sprites[i] = sprite;
+	}
+	
     while(1){
 		FntPrint(-1,"Illo es una PS1");
 		
@@ -250,10 +268,22 @@ int main()
         ClearOTagR(ot[db],OTLEN); //Clear ordering table
 		
 		
-		// char *SortSprite(int x, int y, u_int *ot, char *pri, SPRITE *sprite) 
-		nextpri = SortSprite(32, 32, ot[db], nextpri, &sprite); 
-
-
+		// char *SortSprite(int x, int y, u_int *ot, char *pri, SPRITE *sprite)
+		int j = 0;
+		for (j=0;j<3;j++){
+			SPRITE sprite;
+			sprite = sprites[j];
+			if ( j % 2 == 0){
+				changeColors(&sprite);
+			}
+			else{
+				//changeSize(&sprite);
+			}
+			nextpri = SortSprite(x[j], y[j], colors[j], ot[db], nextpri, &sprite); 
+			move_sprite(sprite.w,sprite.h,j);
+			
+		}
+		
 		int i = 0;
 		for (i=0;i<3;i++){
 			tile = (TILE*)nextpri;

@@ -1,7 +1,7 @@
 include ../psn00bsdk-setup.mk
 
 # Project target name
-TARGET		= sprite.elf
+TARGET		= texture-sprite.elf
 
 # Searches for C, C++ and S (assembler) files in local directory
 CFILES		= $(notdir $(wildcard *.c))
