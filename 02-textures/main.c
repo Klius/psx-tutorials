@@ -65,7 +65,7 @@ void GetSprite(TIM_IMAGE *tim, SPRITE *sprite) {
     sprite->col.b = 128;
 }
 //sorts the sprite into the ordering table
-char *SortSprite(int x, int y,int colors[], u_int *ot, char *pri, SPRITE *sprite) {
+char *SortSprite(int x, int y, u_int *ot, char *pri, SPRITE *sprite) {
 
     SPRT *sprt;
     DR_TPAGE *tpage;
@@ -239,24 +239,25 @@ int main()
 
 	//SPRITE sprite;
 	TIM_IMAGE my_image;
+	TIM_IMAGE player;
 		
 	extern u_int tim_my_image[];
+	extern u_int tim_player[];
 	init();
 	
 	//Load the TIM
+	LoadTexture((u_int*)tim_player, &player);
 	LoadTexture((u_int*)tim_my_image, &my_image);
-
 	
 
 	SPRITE sprites[3];
 	for (int i = 0;i<3;i++){
 		SPRITE sprite;
-		GetSprite(&my_image, &sprite);
 		if ( i % 2 == 0){
-			setColors(&sprite);
+			GetSprite(&player, &sprite);
 		}
 		else{
-			changeSize(&sprite);
+			GetSprite(&my_image, &sprite);
 		}
 		sprites[i] = sprite;
 	}
@@ -274,23 +275,24 @@ int main()
 			SPRITE sprite;
 			sprite = sprites[j];
 			if ( j % 2 == 0){
-				changeColors(&sprite);
+				//changeColors(&sprite);
 			}
 			else{
 				//changeSize(&sprite);
 			}
-			nextpri = SortSprite(x[j], y[j], colors[j], ot[db], nextpri, &sprite); 
+			nextpri = SortSprite(x[j], y[j], ot[db], nextpri, &sprite); 
 			move_sprite(sprite.w,sprite.h,j);
 			
 		}
-		
+		/*
 		int i = 0;
 		for (i=0;i<3;i++){
 			tile = (TILE*)nextpri;
 			tiles(tile,i);
 			//Advance te next primitive pointer
 			nextpri += sizeof(TILE);
-		}
+		}*/
+		nextpri += sizeof(TILE);
         //Flush puts prints in the screen
 		FntFlush(-1);
 
@@ -300,11 +302,3 @@ int main()
 	
     return 0;
 }
-/*
-TODO A few things you may want to experiment with yourself for further learning:
-
-    - Play around with the values specified in setXY0(), setRGB0() and setWH() to change the position, color and size of the sprite respectively.
-    - Try drawing more sprites by repeating the primitive creation process. Make sure the nextpri and tile pointers have been advanced before creating a new primitive.
-    - You can advance the primitive pointer with tile++;, and set the updated address to nextpri by converting types back (nextpri = (char*)tile;)
-    - Try making the yellow square bounce around the screen, by defining two variables for (x,y) coordinates and two more for the direction flags, and write some logic that makes the (x,y) coordinates move and bounce around the screen.
-*/ 
